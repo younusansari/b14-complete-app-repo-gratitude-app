@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway-affinity-demo
+  namespace: gratitudeapp-scheduling-lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gratitudeapp
+      tier: api
+  template:
+    metadata:
+      labels:
+        app: gratitudeapp
+        tier: api
+    spec:
+      containers:
+        - name: api-gateway
+          image: nginx:1.27
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-affinity-demo
+  namespace: gratitudeapp-scheduling-lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gratitudeapp
+      tier: server
+  template:
+    metadata:
+      labels:
+        app: gratitudeapp
+        tier: server
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gratitudeapp
+                  tier: api
+              topologyKey: kubernetes.io/hostname
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gratitudeapp
+                    tier: server
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: server
+          image: nginx:1.27
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi

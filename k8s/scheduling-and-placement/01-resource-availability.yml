@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gratitudeapp-scheduling-lab
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gratitudeapp-default-limits
+  namespace: gratitudeapp-scheduling-lab
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      default:
+        cpu: 500m
+        memory: 512Mi
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gratitudeapp-quota
+  namespace: gratitudeapp-scheduling-lab
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+    pods: "10"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-demo
+  namespace: gratitudeapp-scheduling-lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gratitudeapp
+      feature: resource-demo
+  template:
+    metadata:
+      labels:
+        app: gratitudeapp
+        feature: resource-demo
+    spec:
+      containers:
+        - name: resource-demo
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 400m
+              memory: 512Mi

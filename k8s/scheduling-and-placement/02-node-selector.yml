@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-selector-demo
+  namespace: gratitudeapp-scheduling-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gratitudeapp
+      feature: node-selector
+  template:
+    metadata:
+      labels:
+        app: gratitudeapp
+        feature: node-selector
+    spec:
+      nodeSelector:
+        workload: gratitudeapp
+      containers:
+        - name: node-selector-demo
+          image: nginx:1.27
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi

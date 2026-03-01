@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-affinity-demo
+  namespace: gratitudeapp-scheduling-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gratitudeapp
+      feature: node-affinity
+  template:
+    metadata:
+      labels:
+        app: gratitudeapp
+        feature: node-affinity
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: workload
+                    operator: In
+                    values:
+                      - gratitudeapp
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/zone
+                    operator: In
+                    values:
+                      - ap-south-1a
+      containers:
+        - name: node-affinity-demo
+          image: nginx:1.27
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi

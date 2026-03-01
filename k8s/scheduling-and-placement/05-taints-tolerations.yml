@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taints-tolerations-demo
+  namespace: gratitudeapp-scheduling-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gratitudeapp
+      feature: taints-tolerations
+  template:
+    metadata:
+      labels:
+        app: gratitudeapp
+        feature: taints-tolerations
+    spec:
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: gratitudeapp
+          effect: NoSchedule
+      containers:
+        - name: taints-tolerations-demo
+          image: nginx:1.27
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi

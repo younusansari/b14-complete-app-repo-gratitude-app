@@ -1,0 +1,74 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: gratitudeapp-low-priority
+value: 1000
+globalDefault: false
+description: "Low-priority background workloads."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: gratitudeapp-high-priority
+value: 100000
+globalDefault: false
+description: "High-priority user-facing workloads."
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: low-priority-demo
+  namespace: gratitudeapp-scheduling-lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gratitudeapp
+      priority: low
+  template:
+    metadata:
+      labels:
+        app: gratitudeapp
+        priority: low
+    spec:
+      priorityClassName: gratitudeapp-low-priority
+      containers:
+        - name: low-priority-demo
+          image: nginx:1.27
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 700m
+              memory: 768Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: high-priority-demo
+  namespace: gratitudeapp-scheduling-lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gratitudeapp
+      priority: high
+  template:
+    metadata:
+      labels:
+        app: gratitudeapp
+        priority: high
+    spec:
+      priorityClassName: gratitudeapp-high-priority
+      preemptionPolicy: PreemptLowerPriority
+      containers:
+        - name: high-priority-demo
+          image: nginx:1.27
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 700m
+              memory: 768Mi
